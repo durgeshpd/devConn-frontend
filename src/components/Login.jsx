@@ -9,12 +9,14 @@ const Login = () => {
 
   const [emailId, setEmailId] = useState("virat@kholi.com");
   const [password, setPassword] = useState("Virat@123");
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    
+
     e.preventDefault(); // prevents page reload
+    setError("");
     try {
       const res = await axios.post(BASE_URL + "/login", {
         emailId,
@@ -25,7 +27,8 @@ const Login = () => {
       console.log(res.data);
       dispatch(addUser(res.data));
       return navigate("/");
-    } catch (err) {
+    }  catch (err) {
+      setError(err.response?.data || "An error occurred. Please try again.");
       console.error(err);
     }
   }
@@ -35,6 +38,13 @@ const Login = () => {
       <div className="card w-96 bg-base-100 shadow-2xl rounded-3xl">
         <div className="card-body">
           <h2 className="text-center text-2xl font-semibold mb-6">Login</h2>
+
+          {/* Display error message if there is an error */}
+          {error && (
+            <div className="text-red-500 mb-4">
+              <strong>Error: </strong>{error}
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-4">
