@@ -17,7 +17,7 @@ const Feed = () => {
             dispatch(addFeed(res.data));
         }
         catch (err) {
-
+            console.error(err);
         }
     };
     useEffect(() => {
