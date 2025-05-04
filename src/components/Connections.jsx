@@ -39,17 +39,27 @@ const Connections = () => {
             </h2>
             <div className="space-y-4">
                 {connections.map((connection) => {
-                    const from = connection.fromUserId;
-                    const to = connection.toUserId;
+                    const { _id, firstName, lastName, photoUrl, age, gender } = connection;
 
                     return (
                         <div
-                            key={connection._id}
-                            className="p-4 border rounded-lg shadow-sm bg-white hover:bg-gray-50 transition"
+                            key={_id}
+                            className="flex items-center bg-white border border-gray-200 rounded-xl shadow-md p-4 hover:shadow-lg transition duration-300"
                         >
-                            <p className="text-gray-700 font-medium">
-                                {from?.firstName} {from?.lastName} {to?.firstName} {to?.lastName}
-                            </p>
+                            <img
+                                src={photoUrl || "https://via.placeholder.com/64x64.png?text=User"}
+                                alt={firstName + " " + lastName}
+                                className="w-16 h-16 rounded-full object-cover border-2 border-gray-300"
+                            />
+                            <div className="ml-4">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    {firstName + " " + lastName}
+                                </h3>
+                                <div className="text-sm text-gray-600">
+                                    <p>Age: {age || "N/A"}</p>
+                                    <p>Gender: {gender || "N/A"}</p>
+                                </div>
+                            </div>
                         </div>
                     );
                 })}

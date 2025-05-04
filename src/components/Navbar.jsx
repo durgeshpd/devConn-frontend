@@ -28,11 +28,6 @@ const Navbar = () => {
       </div>
 
       <div className="flex gap-2 items-center">
-        <input
-          type="text"
-          placeholder="Search"
-          className="input input-bordered w-24 md:w-auto"
-        />
 
         {user && (
           <div className="dropdown dropdown-end">
@@ -55,6 +50,7 @@ const Navbar = () => {
                 </Link>
               </li>
               <li><Link to="/connections/">Connections</Link></li>
+              <li><Link to="/requests/">Requests</Link></li>
               <li><a onClick={handleLogout}>Logout</a></li>
             </ul>
           </div>
