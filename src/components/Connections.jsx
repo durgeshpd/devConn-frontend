@@ -3,6 +3,7 @@ import { BASE_URL } from "../utils/constants";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnections } from "../utils/connectionSlice";
+import { Link } from "react-router-dom";
 
 const Connections = () => {
     const connections = useSelector((store) => store.connections);
@@ -39,27 +40,41 @@ const Connections = () => {
             </h2>
             <div className="space-y-4">
                 {connections.map((connection) => {
+                    if(!connection) return null;
+                    
                     const { _id, firstName, lastName, photoUrl, age, gender } = connection;
 
                     return (
                         <div
                             key={_id}
-                            className="flex items-center bg-white border border-gray-200 rounded-xl shadow-md p-4 hover:shadow-lg transition duration-300"
+                            className="flex items-center justify-between bg-white border border-gray-200 rounded-xl shadow-md p-4 hover:shadow-lg transition duration-300"
                         >
-                            <img
-                                src={photoUrl || "https://via.placeholder.com/64x64.png?text=User"}
-                                alt={firstName + " " + lastName}
-                                className="w-16 h-16 rounded-full object-cover border-2 border-gray-300"
-                            />
-                            <div className="ml-4">
-                                <h3 className="text-lg font-semibold text-gray-800">
-                                    {firstName + " " + lastName}
-                                </h3>
-                                <div className="text-sm text-gray-600">
-                                    <p>Age: {age || "N/A"}</p>
-                                    <p>Gender: {gender || "N/A"}</p>
+                            <div className="flex items-center">
+                                <img
+                                    src={photoUrl || "https://via.placeholder.com/64x64.png?text=User"}
+                                    alt={firstName + " " + lastName}
+                                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-300"
+                                />
+                                <div className="ml-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">
+                                        {firstName + " " + lastName}
+                                    </h3>
+                                    <div className="text-sm text-gray-600">
+                                        <p>Age: {age || "N/A"}</p>
+                                        <p>Gender: {gender || "N/A"}</p>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* 💬 Chat Button */}
+
+                            <Link to={`/chat/${_id}`}>
+                                <button
+                                    className="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                                >
+                                    💬 Chat
+                                </button>
+                            </Link>
                         </div>
                     );
                 })}
