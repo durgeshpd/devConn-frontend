@@ -6,8 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 
 const Login = () => {
-  const [emailId, setEmailId] = useState("virat@kholi.com");
-  const [password, setPassword] = useState("Virat@123");
+  const [emailId, setEmailId] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [isSignupForm, setIsSignupForm] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -15,23 +18,26 @@ const Login = () => {
   const [photoUrl, setPhotoUrl] = useState("");
   const [gender, setGender] = useState("");
 
-  // Separate states for error and success messages
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess(""); // Reset success message on submit
+    setSuccess("");
+
+    if (isSignupForm && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     try {
       let res;
 
       if (isSignupForm) {
-        // Sign Up logic
         res = await axios.post(BASE_URL + "/signup", {
           firstName,
           lastName,
@@ -42,18 +48,19 @@ const Login = () => {
           password,
         });
 
-        // If signup succeeds, display success message
         setSuccess("Signup successful! Please login.");
-        setIsSignupForm(false); // Switch to login mode
+        setIsSignupForm(false);
+        setPassword("");
+        setConfirmPassword("");
       } else {
-        // Login logic
         res = await axios.post(
           BASE_URL + "/login",
           { emailId, password },
           { withCredentials: true }
         );
+
         dispatch(addUser(res.data));
-        navigate("/"); // Redirect to the homepage after login
+        navigate("/");
       }
     } catch (err) {
       setError(err.response?.data || "An error occurred. Please try again.");
@@ -69,14 +76,12 @@ const Login = () => {
             {isSignupForm ? "Sign Up" : "Login"}
           </h2>
 
-          {/* Display error message */}
           {error && (
             <div className="text-red-500 mb-4">
               <strong>Error: </strong>{error}
             </div>
           )}
 
-          {/* Display success message */}
           {success && (
             <div className="text-green-500 mb-4">
               <strong>Success: </strong>{success}
@@ -107,8 +112,7 @@ const Login = () => {
                   className="input input-bordered w-full rounded-lg"
                   onChange={(e) => setAge(e.target.value)}
                 />
-                
-                {/* Gender Dropdown */}
+
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
@@ -119,7 +123,7 @@ const Login = () => {
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
-                
+
                 <input
                   type="text"
                   value={photoUrl}
@@ -138,8 +142,9 @@ const Login = () => {
               onChange={(e) => setEmailId(e.target.value)}
               required
             />
+
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               placeholder="Password"
               className="input input-bordered w-full rounded-lg"
@@ -147,13 +152,35 @@ const Login = () => {
               required
             />
 
+            {isSignupForm && (
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                placeholder="Confirm Password"
+                className="input input-bordered w-full rounded-lg"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            )}
+
+            <div
+              className="text-sm text-right text-blue-500 cursor-pointer hover:underline"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Hide Password" : "Show Password"}
+            </div>
+
             <button type="submit" className="btn btn-primary w-full rounded-lg">
               {isSignupForm ? "Sign Up" : "Login"}
             </button>
 
             <p
               className="text-center text-sm text-gray-500 cursor-pointer hover:underline mt-2"
-              onClick={() => setIsSignupForm(!isSignupForm)}
+              onClick={() => {
+                setIsSignupForm(!isSignupForm);
+                setError("");
+                setSuccess("");
+              }}
             >
               {isSignupForm
                 ? "Already have an account? Login"

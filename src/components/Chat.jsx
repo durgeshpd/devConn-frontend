@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { BASE_URL } from "../utils/constants";
+import axios from "axios";
+
+dayjs.extend(relativeTime);
 
 const Chat = () => {
     const { targetUserId } = useParams();
@@ -10,6 +16,30 @@ const Chat = () => {
     const user = useSelector((store) => store.user);
     const userId = user?._id;
 
+    const bottomRef = useRef(null);
+
+    const fetchChatMessages = async () => {
+        const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
+            withCredentials: true,
+        });
+
+        console.log(chat.data.messages);
+
+        const chatMessages = chat?.data?.messages.map(msg => ({
+            firstName: msg?.senderId?.firstName,
+            lastName: msg?.senderId?.lastName,
+            text: msg?.text,
+            avatar: msg?.senderId?.photoUrl,
+            timestamp: msg?.createdAt,
+        }));
+
+        setMessages(chatMessages);
+    };
+
+    useEffect(() => {
+        fetchChatMessages();
+    }, []);
+
     useEffect(() => {
         if (!userId) return;
 
@@ -17,19 +47,34 @@ const Chat = () => {
 
         socket.emit("joinChat", {
             firstName: user.firstName,
+            lastName: user.lastName,
             userId,
             targetUserId,
             avatar: user.photoUrl,
         });
 
-        socket.on("messageReceived", ({ firstName, text, avatar }) => {
-            setMessages((prev) => [...prev, { firstName, text, avatar }]);
+        socket.on("messageReceived", ({ firstName, lastName, text, avatar, timestamp }) => {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    firstName,
+                    lastName,
+                    text,
+                    avatar,
+                    timestamp: timestamp || new Date().toISOString(),
+                },
+            ]);
         });
 
         return () => {
             socket.disconnect();
         };
     }, [userId, targetUserId]);
+
+    // Auto-scroll to bottom when messages update
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     const sendMessage = () => {
         if (!newMessage.trim()) return;
@@ -38,6 +83,7 @@ const Chat = () => {
 
         socket.emit("sendMessage", {
             firstName: user.firstName,
+            lastName: user.lastName,
             userId,
             targetUserId,
             text: newMessage,
@@ -69,8 +115,11 @@ const Chat = () => {
                                 />
                             </div>
                         </div>
-                        <div className="chat-header text-sm text-gray-600 mb-1">
-                            {msg.firstName}
+                        <div className="chat-header text-sm text-gray-600 mb-1 flex items-center gap-2">
+                            {msg.firstName} {msg.lastName}
+                            <span className="text-xs text-gray-400">
+                                • {dayjs(msg.timestamp).fromNow()}
+                            </span>
                         </div>
                         <div
                             className={`chat-bubble ${
@@ -83,6 +132,8 @@ const Chat = () => {
                         </div>
                     </div>
                 ))}
+                {/* 👇 Scroll anchor */}
+                <div ref={bottomRef}></div>
             </div>
 
             <div className="mt-4 flex items-center gap-2">
